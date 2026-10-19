@@ -3,6 +3,12 @@
   "name": "cffk",
   "compatibility_date": "2026-03-12",
   "main": "vike:server-entry",
+  "routes": [
+    {
+      "pattern": "card.ailpay.de",
+      "custom_domain": true
+    }
+  ],
   "send_email": [
     {
       "name": "EMAIL"
