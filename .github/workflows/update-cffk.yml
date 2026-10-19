@@ -25,18 +25,24 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Keep instance-specific Cloudflare bindings and deployment settings.
-          if [ -f wrangler.jsonc ]; then
-            cp wrangler.jsonc "$RUNNER_TEMP/wrangler.current.jsonc"
-          fi
+          # Preserve instance-specific Cloudflare settings and deployment workflows.
+          for file in wrangler.jsonc .github/workflows/deploy-cloudflare.yml .github/workflows/update-cffk.yml; do
+            if [ -f "$file" ]; then
+              mkdir -p "$RUNNER_TEMP/cffk-preserved/$(dirname "$file")"
+              cp "$file" "$RUNNER_TEMP/cffk-preserved/$file"
+            fi
+          done
 
           git fetch https://github.com/34892002/cffk.git main
           git reset --hard FETCH_HEAD
           upstream_sha="$(git rev-parse --short HEAD)"
 
-          if [ -f "$RUNNER_TEMP/wrangler.current.jsonc" ]; then
-            cp "$RUNNER_TEMP/wrangler.current.jsonc" wrangler.jsonc
-          fi
+          for file in wrangler.jsonc .github/workflows/deploy-cloudflare.yml .github/workflows/update-cffk.yml; do
+            if [ -f "$RUNNER_TEMP/cffk-preserved/$file" ]; then
+              mkdir -p "$(dirname "$file")"
+              cp "$RUNNER_TEMP/cffk-preserved/$file" "$file"
+            fi
+          done
 
           git config user.name "CFFK Updater"
           git config user.email "actions@github.com"
