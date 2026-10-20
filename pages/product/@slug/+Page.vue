@@ -61,7 +61,7 @@
                       :aria-pressed="selectedMethod === item.key"
                       @click="selectedMethod = item.key"
                     >
-                      {{ item.name }}{{ item.channel ? `（${channelLabel(item.channel)}）` : "" }}
+                      {{ formatPaymentMethodLabel(item, messages.productCheckout.paymentChannels) }}
                     </Button>
                   </div>
                 </div>
@@ -128,6 +128,7 @@ import { clearLocalAddresses, getLocalAddresses, saveLocalAddress, type LocalAdd
 import { useStorefrontPreferences } from "@/lib/storefront-preferences";
 import { saveGuestOrder } from "@/lib/local-orders";
 import { cacheQrPayment } from "@/lib/payment-utils";
+import { formatPaymentMethodLabel } from "@/lib/payment-method-label";
 import { runTelefunc, userErrorMessage } from "@/lib/telefunc-client";
 import { onCreateAddress, onListAddresses } from "@/server/address/index.telefunc";
 import { onPreviewDiscount } from "@/server/discount/preview.telefunc";
@@ -179,5 +180,5 @@ function confirmClearSavedAddresses() { if (!clearLocalAddresses()) { toast.erro
 async function loadAddresses() { if (selectedSku.value.deliveryType !== "EXPRESS") return; addressesLoading.value = true; try { addresses.value = user ? await runTelefunc(() => onListAddresses(), { notifyError: false }) : getLocalAddresses(); const preferred = addresses.value.find((item) => item.isDefault) ?? addresses.value[0]; selectedAddress.value = preferred ? String(preferred.id) : "new"; } catch (cause) { toast.error(userErrorMessage(cause, messages.value.productCheckout.addressLoadFailed)); selectedAddress.value = "new"; } finally { addressesLoading.value = false; } }
 function addressSummary(address: SavedAddress) { return `${address.province}${address.city}${address.district}${address.addressLine}`; }
 onMounted(loadAddresses);
-function channelLabel(channel: string) { return ({ web: messages.value.productCheckout.paymentChannels.web, wap: messages.value.productCheckout.paymentChannels.wap, face_to_face: messages.value.productCheckout.paymentChannels.faceToFace, alipay: messages.value.productCheckout.paymentChannels.alipay, wxpay: messages.value.productCheckout.paymentChannels.wxpay } as Record<string, string>)[channel] ?? channel; }
+
 </script>

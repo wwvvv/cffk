@@ -1,4 +1,6 @@
 
+import { EPAY_CHANNEL_VALUES, type EpayChannel } from "./epay-channels";
+
 export type AlipayMode = "web" | "face_to_face";
 
 export type AlipayConfig = {
@@ -18,7 +20,7 @@ export type EpayConfig = {
   baseUrl: string;
   pid: string;
   key: string;
-  epayChannels: Array<"alipay" | "wxpay">;
+  epayChannels: EpayChannel[];
   notifyUrl: string;
   returnUrl: string;
 };
@@ -177,7 +179,7 @@ export function parseEpayConfig(json: string): EpayConfig {
     baseUrl: requireUrl(value.baseUrl, "baseUrl"),
     pid: requireString(value.pid, "pid"),
     key: requireString(value.key, "key"),
-    epayChannels: requireStringArray(value.epayChannels, "epayChannels", ["alipay", "wxpay"], 1) as EpayConfig["epayChannels"],
+    epayChannels: requireStringArray(value.epayChannels, "epayChannels", EPAY_CHANNEL_VALUES, 1) as EpayConfig["epayChannels"],
     notifyUrl: requirePaymentUrl(value.notifyUrl, "notifyUrl", true),
     returnUrl: requirePaymentUrl(value.returnUrl, "returnUrl", true),
   };

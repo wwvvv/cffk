@@ -56,7 +56,7 @@ function fail(code: string): never {
 function normalizePaymentChannel(provider: PaymentProvider, channel?: string) {
   const normalized = channel?.trim() || null;
   if (provider === "ALIPAY") return normalized ?? "web";
-  if (provider === "EPAY") return normalized === "wxpay" ? "wxpay" : "alipay";
+  if (provider === "EPAY") return normalized;
   return normalized;
 }
 

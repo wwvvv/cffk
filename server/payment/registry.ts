@@ -1,3 +1,4 @@
+import { EPAY_CHANNELS, type EpayChannel } from "@/lib/epay-channels";
 import { createProviderAdapter } from "./providers";
 import type { PaymentAdapter } from "./types";
 import { validateJsonFormValues, type JsonFormFieldDefinition, type JsonFormValues } from "@/lib/json-form-values";
@@ -12,7 +13,7 @@ import {
 } from "@/lib/config-schemas";
 
 export type PaymentProviderKind = "ALIPAY" | "EPAY" | "BEPUSDT" | "STRIPE" | "HASHPAY" | "PERPAY";
-export type PaymentChannel = "web" | "wap" | "face_to_face" | "alipay" | "wxpay";
+export type PaymentChannel = "web" | "wap" | "face_to_face" | EpayChannel;
 
 
 export type ProviderDefinition = {
@@ -66,7 +67,7 @@ export const paymentProviderDefinitions: Record<PaymentProviderKind, ProviderDef
       { key: "baseUrl", label: "网关地址", type: "url", required: true },
       { key: "pid", label: "商户 PID", type: "text", required: true },
       { key: "key", label: "商户密钥", type: "password", required: true, secret: true },
-      { key: "epayChannels", label: "支付子渠道", type: "multi_select", required: true, min: 1, options: [{ label: "支付宝", value: "alipay" }, { label: "微信", value: "wxpay" }] },
+      { key: "epayChannels", label: "支付子渠道", type: "multi_select", required: true, min: 1, options: [...EPAY_CHANNELS] },
       common.notifyUrl,
       common.returnUrl,
     ],

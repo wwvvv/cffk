@@ -20,38 +20,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Sync from upstream
+      - name: Merge upstream without overwriting instance customizations
         shell: bash
         run: |
           set -euo pipefail
-
-          # Preserve instance-specific Cloudflare settings and deployment workflows.
-          for file in wrangler.jsonc .github/workflows/deploy-cloudflare.yml .github/workflows/update-cffk.yml; do
-            if [ -f "$file" ]; then
-              mkdir -p "$RUNNER_TEMP/cffk-preserved/$(dirname "$file")"
-              cp "$file" "$RUNNER_TEMP/cffk-preserved/$file"
-            fi
-          done
-
-          git fetch https://github.com/34892002/cffk.git main
-          git reset --hard FETCH_HEAD
-          upstream_sha="$(git rev-parse --short HEAD)"
-
-          for file in wrangler.jsonc .github/workflows/deploy-cloudflare.yml .github/workflows/update-cffk.yml; do
-            if [ -f "$RUNNER_TEMP/cffk-preserved/$file" ]; then
-              mkdir -p "$(dirname "$file")"
-              cp "$RUNNER_TEMP/cffk-preserved/$file" "$file"
-            fi
-          done
-
           git config user.name "CFFK Updater"
           git config user.email "actions@github.com"
+          previous_sha="$(git rev-parse HEAD)"
+          git fetch https://github.com/34892002/cffk.git main
 
-          if git diff --quiet; then
-            echo "CFFK is already up to date."
-          else
-            git add -A
-            git commit -m "Update CFFK to ${upstream_sha}"
+          # A merge preserves local payment, Worker and workflow customizations.
+          # Conflicts fail closed: resolve them manually before releasing.
+          if ! git merge --no-ff --no-edit FETCH_HEAD; then
+            git merge --abort || true
+            echo "::error::Upstream changes conflict with instance customizations. Review and merge manually."
+            exit 1
           fi
 
-          git push --force-with-lease origin "HEAD:${GITHUB_REF_NAME}"
+          if [ "$(git rev-parse HEAD)" = "$previous_sha" ]; then
+            echo "CFFK is already up to date."
+          else
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
