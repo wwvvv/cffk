@@ -350,6 +350,7 @@ export type QueriedOrder = {
   deliveryStatus: "NOT_DELIVERED" | "DELIVERING" | "DELIVERED" | "FAILED";
   paymentProvider: string;
   paymentChannel: string | null;
+  isAutomaticDelivery: boolean;
   productName: string;
   quantity: number;
   amount: string;
@@ -372,7 +373,7 @@ export async function getOrderForQuery(database: D1Database, orderNo: string, ow
       : null;
   if (!access) return null;
   const db = createDrizzleDb(database);
-  const [record] = await db.select({ id: order.id, orderNo: order.orderNo, status: order.status, paymentStatus: order.paymentStatus, deliveryStatus: order.deliveryStatus, paymentProvider: order.paymentProvider, paymentChannel: order.paymentChannel, productName: order.productNameSnapshot, quantity: order.quantity, amount: order.amount, createdAt: order.createdAt }).from(order).where(and(eq(order.orderNo, normalizedOrderNo), access)).limit(1);
+  const [record] = await db.select({ id: order.id, orderNo: order.orderNo, status: order.status, paymentStatus: order.paymentStatus, deliveryStatus: order.deliveryStatus, paymentProvider: order.paymentProvider, paymentChannel: order.paymentChannel, deliveryType: order.deliveryTypeSnapshot, fulfillmentSource: order.fulfillmentSourceSnapshot, productName: order.productNameSnapshot, quantity: order.quantity, amount: order.amount, createdAt: order.createdAt }).from(order).where(and(eq(order.orderNo, normalizedOrderNo), access)).limit(1);
   if (!record) return null;
   const deliveries = await db.select({ contentSnapshot: orderDelivery.contentSnapshot }).from(orderDelivery).where(and(eq(orderDelivery.orderId, record.id), eq(orderDelivery.status, "SUCCESS"))).orderBy(asc(orderDelivery.id));
   return {
@@ -382,6 +383,7 @@ export async function getOrderForQuery(database: D1Database, orderNo: string, ow
     deliveryStatus: record.deliveryStatus,
     paymentProvider: record.paymentProvider,
     paymentChannel: record.paymentChannel,
+    isAutomaticDelivery: record.fulfillmentSource === "SUPPLIER" || record.deliveryType === "CARD_AUTO" || record.deliveryType === "FIXED_CARD",
     productName: record.productName,
     quantity: record.quantity,
     amount: formatCentsAsYuan(record.amount),

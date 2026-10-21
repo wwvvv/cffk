@@ -100,8 +100,34 @@ describe("core storefront flows", () => {
     const { context, created } = await runStorefrontFlow(identity);
 
     const queried = await getOrderForQuery(context.database, created.orderNo, null, identity.email);
-    expect(queried).toMatchObject({ status: "DELIVERED", paymentStatus: "PAID", deliveries: ["LICENSE-CORE-001"] });
+    expect(queried).toMatchObject({ status: "DELIVERED", paymentStatus: "PAID", isAutomaticDelivery: true, deliveries: ["LICENSE-CORE-001"] });
     expect(await getOrderForQuery(context.database, created.orderNo, null, "other@example.com")).toBeNull();
+  });
+
+  test("manual fulfillment stays paid but not delivered until the merchant fulfills it", async () => {
+    const identity = { name: "Guest", ownerUserId: null, email: "manual@example.com" };
+    const context = createTestDatabase();
+    databases.push(context);
+    insertFixtures(context.sqlite, identity);
+    context.sqlite.query("UPDATE productSku SET deliveryType = 'MANUAL', fixedDeliveryContent = NULL").run();
+    const product = context.sqlite.query("SELECT id FROM product_v2 LIMIT 1").get() as { id: number };
+    const sku = context.sqlite.query("SELECT id FROM productSku LIMIT 1").get() as { id: number };
+    const created = await createOrder(context.database, {
+      productId: product.id,
+      productSkuId: sku.id,
+      quantity: 1,
+      paymentProvider: "EPAY",
+      paymentChannel: "alipay",
+      contactType: "EMAIL",
+      contactValue: identity.email,
+    }, null);
+    expect(await confirmOrderPayment(context.database, created.id)).toEqual({ outcome: "CONFIRMED" });
+    expect(await getOrderForQuery(context.database, created.orderNo, null, identity.email)).toMatchObject({
+      paymentStatus: "PAID",
+      deliveryStatus: "NOT_DELIVERED",
+      isAutomaticDelivery: false,
+      deliveries: [],
+    });
   });
 
   test("account user owns the same purchase flow and queries it through the account", async () => {
@@ -109,7 +135,7 @@ describe("core storefront flows", () => {
     const { context, created } = await runStorefrontFlow(identity);
 
     const queried = await getOrderForQuery(context.database, created.orderNo, identity.ownerUserId);
-    expect(queried).toMatchObject({ status: "DELIVERED", paymentStatus: "PAID", deliveries: ["LICENSE-CORE-001"] });
+    expect(queried).toMatchObject({ status: "DELIVERED", paymentStatus: "PAID", isAutomaticDelivery: true, deliveries: ["LICENSE-CORE-001"] });
     expect(await getOrderForQuery(context.database, created.orderNo, "another-user")).toBeNull();
   });
 });
