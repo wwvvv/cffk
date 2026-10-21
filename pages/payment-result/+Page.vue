@@ -20,7 +20,7 @@
           <template v-if="order">
             <div class="flex items-center justify-between gap-4 rounded-md border p-4" aria-live="polite"><span>订单状态</span><Badge :variant="statusVariant(order.status)">{{ statusLabel(order.status) }}</Badge></div>
             <div class="grid gap-3 border-y py-4" aria-live="polite"><div class="flex justify-between gap-4"><span class="text-muted-foreground">订单号</span><span class="break-all text-right font-mono text-xs">{{ order.orderNo }}</span></div><div class="flex justify-between gap-4"><span class="text-muted-foreground">金额</span><span>¥{{ order.amount }}</span></div><div class="flex justify-between gap-4"><span class="text-muted-foreground">支付状态</span><span>{{ paymentStatusLabel(order.paymentStatus) }}</span></div><div class="flex justify-between gap-4"><span class="text-muted-foreground">发货状态</span><span>{{ deliveryStatusLabel(order.deliveryStatus) }}</span></div></div>
-            <div v-if="order.deliveries.length"><p class="font-medium">发货内容</p><pre class="overflow-x-auto whitespace-pre-wrap rounded-md border bg-muted/50 p-3 font-mono text-xs leading-6">{{ order.deliveries.join("\n") }}</pre></div>
+            <div v-if="order.deliveries.length" class="min-w-0"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="font-medium">发货内容</p><DeliveryCopyButton :contents="order.deliveries" /></div><pre class="overflow-x-auto whitespace-pre-wrap break-all rounded-md border bg-muted/50 p-3 font-mono text-xs leading-6">{{ order.deliveries.join("\n") }}</pre></div>
             <p v-else class="text-muted-foreground" aria-live="polite">{{ orderNotice }}</p>
           </template>
         </CardContent>
@@ -38,6 +38,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { useData } from "vike-vue/useData";
 import { usePageContext } from "vike-vue/usePageContext";
+import DeliveryCopyButton from "@/components/DeliveryCopyButton.vue";
 import PublicNav from "@/components/storefront/PublicNav.vue";
 import StorefrontBrand from "@/components/storefront/StorefrontBrand.vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

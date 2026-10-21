@@ -107,7 +107,7 @@
 
 
               <div v-if="result.deliveries.length" class="min-w-0 border-t pt-6">
-                <p class="mb-3 font-medium">发货内容</p>
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><p class="font-medium">发货内容</p><DeliveryCopyButton :contents="result.deliveries" /></div>
                 <pre class="max-h-96 overflow-auto whitespace-pre-wrap break-all rounded-md border bg-muted/50 p-4 font-mono text-xs leading-6">{{ result.deliveries.join("\n") }}</pre>
               </div>
               <Alert v-else-if="result.paymentStatus === 'PAID'">
@@ -172,6 +172,7 @@ import { usePageContext } from "vike-vue/usePageContext";
 import { z } from "zod";
 
 import PublicNav from "@/components/storefront/PublicNav.vue";
+import DeliveryCopyButton from "@/components/DeliveryCopyButton.vue";
 import OrderList from "@/components/storefront/OrderList.vue";
 import StorefrontBrand from "@/components/storefront/StorefrontBrand.vue";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";

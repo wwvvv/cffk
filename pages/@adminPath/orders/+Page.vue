@@ -109,7 +109,7 @@
                 <CardHeader class="border-b px-4 py-4 sm:px-5">
                   <div class="flex items-center justify-between gap-3">
                     <CardTitle class="text-sm">发货内容</CardTitle>
-                    <Badge variant="outline">{{ deliveryContents.length }} 条</Badge>
+                    <div class="flex shrink-0 items-center gap-2"><Badge variant="outline">{{ deliveryContents.length }} 条</Badge><DeliveryCopyButton v-if="deliveryContents.length" :contents="deliveryContents" /></div>
                   </div>
                 </CardHeader>
                 <CardContent class="p-4 sm:p-5">
@@ -172,6 +172,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from "vue";
 import AdminDataTable, { type AdminTableColumn } from "@/components/admin/AdminDataTable.vue";
+import DeliveryCopyButton from "@/components/DeliveryCopyButton.vue";
 import AdminPageHeader from "@/components/admin/AdminPageHeader.vue";
 
 import { Badge } from "@/components/ui/badge";
